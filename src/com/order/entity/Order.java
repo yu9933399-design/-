@@ -15,6 +15,8 @@ public class Order {
     private Integer orderStatus;
     private LocalDateTime createTime;
     private LocalDateTime payTime;
+    private LocalDateTime acceptTime;
+    private String cancelReason;
 
     private String username;
 
