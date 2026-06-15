@@ -84,24 +84,54 @@ public class AdminOrderServlet extends HttpServlet {
             return;
         }
         String path = req.getPathInfo();
-        if ("/status".equals(path)) {
-            try {
+        resp.setContentType("application/json;charset=UTF-8");
+        try {
+            if ("/status".equals(path)) {
                 String orderIdStr = req.getParameter("orderId");
-                String statusStr = req.getParameter("status");
-                if (orderIdStr != null && statusStr != null) {
-                    int orderId = Integer.parseInt(orderIdStr);
-                    int status = Integer.parseInt(statusStr);
-                    orderService.updateOrderStatus(orderId, status);
+                String action = req.getParameter("action");
+                String reason = req.getParameter("reason");
+                if (orderIdStr == null || action == null) {
+                    resp.getWriter().print("{\"success\":false,\"message\":\"参数不完整\"}");
+                    return;
                 }
-                resp.setContentType("application/json;charset=UTF-8");
+                int orderId = Integer.parseInt(orderIdStr);
+
+                if (currentUser.getRole() == 2) {
+                    switch (action) {
+                        case "accept":
+                            orderService.merchantAccept(orderId, currentUser.getUserId());
+                            break;
+                        case "reject":
+                            orderService.merchantReject(orderId, currentUser.getUserId(), reason);
+                            break;
+                        case "startPreparing":
+                            orderService.merchantStartPreparing(orderId, currentUser.getUserId());
+                            break;
+                        case "deliver":
+                            orderService.merchantDeliver(orderId, currentUser.getUserId());
+                            break;
+                        case "cancel":
+                            orderService.merchantCancel(orderId, currentUser.getUserId(), reason);
+                            break;
+                        default:
+                            resp.getWriter().print("{\"success\":false,\"message\":\"未知操作\"}");
+                            return;
+                    }
+                } else {
+                    String statusStr = req.getParameter("status");
+                    if (statusStr == null) {
+                        resp.getWriter().print("{\"success\":false,\"message\":\"缺少状态参数\"}");
+                        return;
+                    }
+                    int toStatus = Integer.parseInt(statusStr);
+                    orderService.adminForceStatus(orderId, toStatus, currentUser.getUserId(), reason);
+                }
                 resp.getWriter().print("{\"success\":true}");
-            } catch (NumberFormatException e) {
-                resp.setContentType("application/json;charset=UTF-8");
-                resp.getWriter().print("{\"success\":false,\"message\":\"参数格式错误\"}");
-            } catch (Exception e) {
-                resp.setContentType("application/json;charset=UTF-8");
-                resp.getWriter().print("{\"success\":false}");
             }
+        } catch (NumberFormatException e) {
+            resp.getWriter().print("{\"success\":false,\"message\":\"参数格式错误\"}");
+        } catch (Exception e) {
+            resp.getWriter().print("{\"success\":false,\"message\":\"" + e.getMessage().replace("\"", "'") + "\"}");
         }
     }
 }
