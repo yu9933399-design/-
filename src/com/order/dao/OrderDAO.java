@@ -187,6 +187,9 @@ public class OrderDAO {
         if (ct != null) o.setCreateTime(ct.toLocalDateTime());
         Timestamp pt = rs.getTimestamp("pay_time");
         if (pt != null) o.setPayTime(pt.toLocalDateTime());
+        Timestamp at = rs.getTimestamp("accept_time");
+        if (at != null) o.setAcceptTime(at.toLocalDateTime());
+        o.setCancelReason(rs.getString("cancel_reason"));
         o.setUsername(rs.getString("username"));
         return o;
     }
