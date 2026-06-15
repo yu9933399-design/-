@@ -9,11 +9,73 @@
 </c:if>
 <div class="card border-0 shadow-sm"><div class="card-body"><table class="table table-hover align-middle">
 <thead class="table-light"><tr><th>订单号</th><th>用户</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
-<tbody><c:forEach items="${orders}" var="order"><tr><td>${order.orderNo}</td><td>${order.username}</td><td class="text-primary fw-bold">&#165;${order.totalAmount}</td>
-<td><select class="form-select form-select-sm order-status" data-order-id="${order.orderId}" style="width:auto;"><option value="0" ${order.orderStatus == 0 ? 'selected' : ''}>待支付</option><option value="1" ${order.orderStatus == 1 ? 'selected' : ''}>已支付</option><option value="2" ${order.orderStatus == 2 ? 'selected' : ''}>配送中</option><option value="3" ${order.orderStatus == 3 ? 'selected' : ''}>已完成</option></select></td>
-<td class="text-muted small">${order.createTime}</td><td><a href="${pageContext.request.contextPath}/admin/order/detail?id=${order.orderId}" class="btn btn-outline-primary btn-sm">详情</a></td></tr></c:forEach></tbody></table></div></div>
+<tbody><c:forEach items="${orders}" var="order"><tr>
+<td>${order.orderNo}</td><td>${order.username}</td><td class="text-primary fw-bold">&#165;${order.totalAmount}</td>
+<td><span class="badge ${order.orderStatus == 1 ? 'bg-warning' : order.orderStatus == 2 ? 'bg-info' : order.orderStatus == 4 ? 'bg-primary' : order.orderStatus == 5 ? 'bg-primary' : order.orderStatus == 6 ? 'bg-success' : order.orderStatus == 8 ? 'bg-success' : 'bg-secondary'}">
+<c:choose><c:when test="${order.orderStatus == 1}">待支付</c:when><c:when test="${order.orderStatus == 2}">待接单</c:when><c:when test="${order.orderStatus == 4}">已接单</c:when><c:when test="${order.orderStatus == 5}">制作中</c:when><c:when test="${order.orderStatus == 6}">配送中</c:when><c:when test="${order.orderStatus == 8}">已完成</c:when><c:when test="${order.orderStatus == 9}">已取消</c:when></c:choose>
+</span></td>
+<td class="text-muted small">${order.createTime}</td>
+<td>
+<a href="${pageContext.request.contextPath}/admin/order/detail?id=${order.orderId}" class="btn btn-outline-primary btn-sm me-1">详情</a>
+<c:if test="${sessionScope.user.role == 2}">
+  <c:if test="${order.orderStatus == 2}">
+    <button class="btn btn-success btn-sm me-1 order-action" data-order="${order.orderId}" data-action="accept">接单</button>
+    <button class="btn btn-danger btn-sm me-1 order-action" data-order="${order.orderId}" data-action="reject" data-need-reason="true">拒单</button>
+  </c:if>
+  <c:if test="${order.orderStatus == 4}">
+    <button class="btn btn-primary btn-sm me-1 order-action" data-order="${order.orderId}" data-action="startPreparing">开始制作</button>
+    <button class="btn btn-danger btn-sm me-1 order-action" data-order="${order.orderId}" data-action="cancel" data-need-reason="true">取消</button>
+  </c:if>
+  <c:if test="${order.orderStatus == 5}">
+    <button class="btn btn-success btn-sm me-1 order-action" data-order="${order.orderId}" data-action="deliver">出餐</button>
+    <button class="btn btn-danger btn-sm me-1 order-action" data-order="${order.orderId}" data-action="cancel" data-need-reason="true">取消</button>
+  </c:if>
+</c:if>
+<c:if test="${sessionScope.user.role == 1}">
+  <c:if test="${order.orderStatus != 8 && order.orderStatus != 9}">
+    <select class="form-select form-select-sm d-inline-block w-auto me-1 admin-status-select" data-order-id="${order.orderId}" style="width:auto;">
+      <option value="1" ${order.orderStatus == 1 ? 'selected' : ''}>待支付</option>
+      <option value="2" ${order.orderStatus == 2 ? 'selected' : ''}>待接单</option>
+      <option value="4" ${order.orderStatus == 4 ? 'selected' : ''}>已接单</option>
+      <option value="5" ${order.orderStatus == 5 ? 'selected' : ''}>制作中</option>
+      <option value="6" ${order.orderStatus == 6 ? 'selected' : ''}>配送中</option>
+      <option value="8" ${order.orderStatus == 8 ? 'selected' : ''}>已完成</option>
+      <option value="9" ${order.orderStatus == 9 ? 'selected' : ''}>已取消</option>
+    </select>
+  </c:if>
+</c:if>
+</td></tr></c:forEach></tbody></table></div></div>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script>$(document).on('change','.order-status',function(){$.post('${pageContext.request.contextPath}/admin/order/status',{orderId:$(this).data('order-id'),status:$(this).val()});});</script>
+<script>
+$(document).on('click', '.order-action', function(){
+  var btn = $(this);
+  var orderId = btn.data('order');
+  var action = btn.data('action');
+  var needReason = btn.data('need-reason');
+  if (needReason) {
+    var reason = prompt('请输入原因：');
+    if (!reason) return;
+    $.post('${pageContext.request.contextPath}/admin/order/status', {orderId: orderId, action: action, reason: reason}, function(r){
+      if(r.success) location.reload(); else alert(r.message || '操作失败');
+    });
+  } else {
+    if (!confirm('确定执行此操作？')) return;
+    $.post('${pageContext.request.contextPath}/admin/order/status', {orderId: orderId, action: action}, function(r){
+      if(r.success) location.reload(); else alert(r.message || '操作失败');
+    });
+  }
+});
+$(document).on('change', '.admin-status-select', function(){
+  var select = $(this);
+  var orderId = select.data('order-id');
+  var status = select.val();
+  var reason = prompt('请输入操作原因（必填）：');
+  if (!reason) { location.reload(); return; }
+  $.post('${pageContext.request.contextPath}/admin/order/status', {orderId: orderId, status: status, reason: reason}, function(r){
+    if(r.success) location.reload(); else alert(r.message || '操作失败');
+  });
+});
+</script>
 </body></html>
