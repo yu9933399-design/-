@@ -41,6 +41,10 @@ public class AdminOrderServlet extends HttpServlet {
                                 : orderService.getOrderItems(orderId);
                         req.setAttribute("order", order);
                         req.setAttribute("items", items);
+                        if (currentUser.getRole() == 1) {
+                            List<OrderLog> logs = new OrderLogDAO().findByOrderId(orderId);
+                            req.setAttribute("logs", logs);
+                        }
                     } else {
                         req.setAttribute("error", "订单不存在");
                     }
