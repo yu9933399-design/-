@@ -70,6 +70,8 @@ CREATE TABLE `order` (
   `order_status` TINYINT NOT NULL DEFAULT 0,
   `create_time` DATETIME NOT NULL,
   `pay_time` DATETIME,
+  `accept_time` DATETIME DEFAULT NULL,
+  `cancel_reason` VARCHAR(500) DEFAULT NULL,
   FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`)
 );
 
