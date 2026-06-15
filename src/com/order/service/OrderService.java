@@ -7,6 +7,7 @@ import com.order.utils.OrderNoGenerator;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class OrderService {
     private OrderItemDAO orderItemDAO = new OrderItemDAO();
     private CartDAO cartDAO = new CartDAO();
     private DishDAO dishDAO = new DishDAO();
+    private OrderLogDAO orderLogDAO = new OrderLogDAO();
 
     public Order submitOrder(Integer userId, String receiverName, String receiverPhone,
                              String receiverAddress, String paymentMethod) throws Exception {
