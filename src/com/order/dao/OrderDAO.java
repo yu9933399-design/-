@@ -93,6 +93,37 @@ public class OrderDAO {
         }
     }
 
+    public int updateStatusWithAcceptTime(Integer orderId, Integer status) throws SQLException {
+        Connection conn = DBUtil.getConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                "UPDATE `order` SET order_status = ?, accept_time = NOW() WHERE order_id = ?");
+            ps.setInt(1, status);
+            ps.setInt(2, orderId);
+            int rows = ps.executeUpdate();
+            ps.close();
+            return rows;
+        } finally {
+            DBUtil.close(conn);
+        }
+    }
+
+    public int updateStatusWithCancelReason(Integer orderId, Integer status, String reason) throws SQLException {
+        Connection conn = DBUtil.getConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                "UPDATE `order` SET order_status = ?, cancel_reason = ? WHERE order_id = ?");
+            ps.setInt(1, status);
+            ps.setString(2, reason);
+            ps.setInt(3, orderId);
+            int rows = ps.executeUpdate();
+            ps.close();
+            return rows;
+        } finally {
+            DBUtil.close(conn);
+        }
+    }
+
     public int updatePaymentMethod(Integer orderId, String paymentMethod) throws SQLException {
         Connection conn = DBUtil.getConnection();
         try {
