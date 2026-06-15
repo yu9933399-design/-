@@ -44,6 +44,10 @@ public class Order {
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
     public LocalDateTime getPayTime() { return payTime; }
     public void setPayTime(LocalDateTime payTime) { this.payTime = payTime; }
+    public LocalDateTime getAcceptTime() { return acceptTime; }
+    public void setAcceptTime(LocalDateTime acceptTime) { this.acceptTime = acceptTime; }
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 }
