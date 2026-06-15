@@ -176,4 +176,124 @@ public class OrderService {
     public void updatePayTime(Integer orderId, java.time.LocalDateTime payTime) throws Exception {
         orderDAO.updatePayTime(orderId, payTime);
     }
+
+    public OrderLogDAO getOrderLogDAO() { return orderLogDAO; }
+
+    // ========== 商家端操作 ==========
+
+    public void merchantAccept(Integer orderId, Integer merchantId) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        if (order.getOrderStatus() != OrderStatus.PENDING_ACCEPT) throw new Exception("当前状态不允许接单");
+        orderDAO.updateStatusWithAcceptTime(orderId, OrderStatus.ACCEPTED);
+        writeLog(orderId, OrderStatus.PENDING_ACCEPT, OrderStatus.ACCEPTED, merchantId, 2, null);
+    }
+
+    public void merchantReject(Integer orderId, Integer merchantId, String reason) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        if (order.getOrderStatus() != OrderStatus.PENDING_ACCEPT) throw new Exception("当前状态不允许拒单");
+        orderDAO.updateStatusWithCancelReason(orderId, OrderStatus.CANCELLED, reason);
+        writeLog(orderId, OrderStatus.PENDING_ACCEPT, OrderStatus.CANCELLED, merchantId, 2, reason);
+    }
+
+    public void merchantStartPreparing(Integer orderId, Integer merchantId) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        if (order.getOrderStatus() != OrderStatus.ACCEPTED) throw new Exception("当前状态不允许开始制作");
+        orderDAO.updateStatus(orderId, OrderStatus.PREPARING);
+        writeLog(orderId, OrderStatus.ACCEPTED, OrderStatus.PREPARING, merchantId, 2, null);
+    }
+
+    public void merchantDeliver(Integer orderId, Integer merchantId) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        if (order.getOrderStatus() != OrderStatus.PREPARING) throw new Exception("当前状态不允许出餐");
+        orderDAO.updateStatus(orderId, OrderStatus.DELIVERING);
+        writeLog(orderId, OrderStatus.PREPARING, OrderStatus.DELIVERING, merchantId, 2, null);
+    }
+
+    public void merchantCancel(Integer orderId, Integer merchantId, String reason) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        int status = order.getOrderStatus();
+        if (status != OrderStatus.ACCEPTED && status != OrderStatus.PREPARING) {
+            throw new Exception("当前状态不允许商家取消");
+        }
+        orderDAO.updateStatusWithCancelReason(orderId, OrderStatus.CANCELLED, reason);
+        writeLog(orderId, status, OrderStatus.CANCELLED, merchantId, 2, reason);
+    }
+
+    // ========== 用户端操作 ==========
+
+    public void userConfirmReceive(Integer orderId, Integer userId) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        if (!order.getUserId().equals(userId)) throw new Exception("无权操作");
+        if (order.getOrderStatus() != OrderStatus.DELIVERING) throw new Exception("当前状态不允许确认收货");
+        orderDAO.updateStatus(orderId, OrderStatus.COMPLETED);
+        writeLog(orderId, OrderStatus.DELIVERING, OrderStatus.COMPLETED, userId, 0, null);
+    }
+
+    public void userCancel(Integer orderId, Integer userId, String reason) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        if (!order.getUserId().equals(userId)) throw new Exception("无权操作");
+        int status = order.getOrderStatus();
+        if (status == OrderStatus.COMPLETED || status == OrderStatus.CANCELLED) {
+            throw new Exception("已完成或已取消的订单不能操作");
+        }
+        if (status == OrderStatus.PREPARING || status == OrderStatus.DELIVERING) {
+            throw new Exception("制作中和配送中的订单不能取消");
+        }
+        if (status == OrderStatus.ACCEPTED) {
+            if (order.getAcceptTime() == null) throw new Exception("接单时间异常");
+            long minutes = Duration.between(order.getAcceptTime(), LocalDateTime.now()).toMinutes();
+            if (minutes > 1) {
+                throw new Exception("已超过1分钟，需提交取消申请");
+            }
+        }
+        orderDAO.updateStatusWithCancelReason(orderId, OrderStatus.CANCELLED, reason);
+        writeLog(orderId, status, OrderStatus.CANCELLED, userId, 0, reason);
+    }
+
+    public boolean canUserDirectCancel(Integer orderId) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) return false;
+        if (order.getOrderStatus() != OrderStatus.ACCEPTED) return false;
+        if (order.getAcceptTime() == null) return false;
+        long minutes = Duration.between(order.getAcceptTime(), LocalDateTime.now()).toMinutes();
+        return minutes <= 1;
+    }
+
+    // ========== 管理员端操作 ==========
+
+    public void adminForceStatus(Integer orderId, int toStatus, Integer adminId, String reason) throws Exception {
+        Order order = orderDAO.findById(orderId);
+        if (order == null) throw new Exception("订单不存在");
+        if (reason == null || reason.trim().isEmpty()) throw new Exception("管理员操作必须填写原因");
+        int fromStatus = order.getOrderStatus();
+        if (toStatus == OrderStatus.ACCEPTED) {
+            orderDAO.updateStatusWithAcceptTime(orderId, toStatus);
+        } else if (toStatus == OrderStatus.CANCELLED) {
+            orderDAO.updateStatusWithCancelReason(orderId, toStatus, reason);
+        } else {
+            orderDAO.updateStatus(orderId, toStatus);
+        }
+        writeLog(orderId, fromStatus, toStatus, adminId, 1, reason);
+    }
+
+    // ========== 日志 ==========
+
+    private void writeLog(Integer orderId, Integer fromStatus, int toStatus, Integer operatorId, int operatorRole, String reason) throws Exception {
+        OrderLog log = new OrderLog();
+        log.setOrderId(orderId);
+        log.setFromStatus(fromStatus);
+        log.setToStatus(toStatus);
+        log.setOperatorId(operatorId);
+        log.setOperatorRole(operatorRole);
+        log.setReason(reason);
+        log.setCreateTime(LocalDateTime.now());
+        orderLogDAO.insert(log);
+    }
 }
