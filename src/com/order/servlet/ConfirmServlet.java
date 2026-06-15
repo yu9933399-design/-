@@ -22,23 +22,30 @@ public class ConfirmServlet extends HttpServlet {
         }
 
         String orderIdStr = req.getParameter("orderId");
-        if (orderIdStr == null || orderIdStr.isEmpty()) {
+        String action = req.getParameter("action");
+        if (orderIdStr == null || orderIdStr.isEmpty() || action == null) {
             resp.sendRedirect(req.getContextPath() + "/order/list");
             return;
         }
 
         try {
             int orderId = Integer.parseInt(orderIdStr);
-            Order order = orderService.getOrderById(orderId);
-            if (order != null && order.getUserId().equals(user.getUserId()) && (order.getOrderStatus() == 1 || order.getOrderStatus() == 2)) {
-                orderService.updateOrderStatus(orderId, 3);
-                resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId);
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/order/list");
+            switch (action) {
+                case "confirmReceive":
+                    orderService.userConfirmReceive(orderId, user.getUserId());
+                    resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId + "&success=确认收货成功");
+                    break;
+                case "cancel":
+                    String reason = req.getParameter("reason");
+                    orderService.userCancel(orderId, user.getUserId(), reason);
+                    resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId + "&success=取消成功");
+                    break;
+                default:
+                    resp.sendRedirect(req.getContextPath() + "/order/list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/order/list");
+            resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderIdStr + "&error=" + java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
         }
     }
 }
