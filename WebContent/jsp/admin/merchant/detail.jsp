@@ -33,7 +33,7 @@
 <table class="table table-hover align-middle"><thead class="table-light"><tr><th>订单号</th><th>用户</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
 <tbody>
 <c:forEach items="${orders}" var="o"><tr><td>${o.orderNo}</td><td><c:out value="${o.username}"/></td><td class="text-primary fw-bold">&#165;<fmt:formatNumber value="${o.totalAmount}" pattern="#,##0.00"/></td>
-<td><select class="form-select form-select-sm order-status" data-order-id="${o.orderId}" style="width:auto;"><option value="0" ${o.orderStatus == 0 ? 'selected' : ''}>待支付</option><option value="1" ${o.orderStatus == 1 ? 'selected' : ''}>配送中</option><option value="2" ${o.orderStatus == 2 ? 'selected' : ''}>配送中</option><option value="3" ${o.orderStatus == 3 ? 'selected' : ''}>已完成</option></select></td>
+<td><c:choose><c:when test="${o.orderStatus == 0 || o.orderStatus == 1}"><span class="badge bg-warning">待支付</span></c:when><c:when test="${o.orderStatus == 2}"><span class="badge bg-info">待接单</span></c:when><c:when test="${o.orderStatus == 4}"><span class="badge bg-primary">已接单</span></c:when><c:when test="${o.orderStatus == 5}"><span class="badge bg-primary">制作中</span></c:when><c:when test="${o.orderStatus == 6}"><span class="badge bg-success">配送中</span></c:when><c:when test="${o.orderStatus == 3 || o.orderStatus == 8}"><span class="badge bg-success">已完成</span></c:when><c:when test="${o.orderStatus == 9}"><span class="badge bg-secondary">已取消</span></c:when><c:otherwise><span class="badge bg-secondary">未知</span></c:otherwise></c:choose></td>
 <td class="text-muted small">${o.createTime}</td>
 <td><a href="${pageContext.request.contextPath}/admin/order/detail?id=${o.orderId}" class="btn btn-outline-primary btn-sm">详情</a></td></tr></c:forEach>
 </tbody></table></div></div>
@@ -51,6 +51,5 @@ function switchTab(e,el){
     document.getElementById('tabOrders').style.display='none';
     document.getElementById('tab'+el.getAttribute('data-target').replace(/^./,function(c){return c.toUpperCase();})).style.display='';
 }
-$(document).on('change','.order-status',function(){$.post('${pageContext.request.contextPath}/admin/merchant/status',{orderId:$(this).data('order-id'),status:$(this).val()},function(){location.reload();});});
 </script>
 </body></html>

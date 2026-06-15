@@ -19,7 +19,7 @@ public class OrderService {
     private OrderLogDAO orderLogDAO = new OrderLogDAO();
 
     public Order submitOrder(Integer userId, String receiverName, String receiverPhone,
-                             String receiverAddress, String paymentMethod) throws Exception {
+                             String receiverAddress, String paymentMethod, Integer shopId) throws Exception {
         if (receiverName == null || receiverName.trim().isEmpty()) {
             throw new Exception("收货人姓名不能为空");
         }
@@ -47,6 +47,25 @@ public class OrderService {
         Connection conn = DBUtil.getConnection();
         try {
             conn.setAutoCommit(false);
+
+            // 跨店校验：如果指定了shopId，检查购物车中是否有其他店铺的商品
+            if (shopId != null) {
+                for (Cart item : cartItems) {
+                    PreparedStatement psShop = conn.prepareStatement("SELECT merchant_id FROM dish WHERE dish_id = ?");
+                    psShop.setInt(1, item.getDishId());
+                    java.sql.ResultSet rsShop = psShop.executeQuery();
+                    if (rsShop.next()) {
+                        int itemShopId = rsShop.getInt("merchant_id");
+                        if (itemShopId != shopId) {
+                            rsShop.close(); psShop.close();
+                            conn.rollback();
+                            throw new Exception("购物车中包含其他店铺商品，请先清空后再结算本店订单");
+                        }
+                    }
+                    rsShop.close();
+                    psShop.close();
+                }
+            }
 
             BigDecimal totalAmount = BigDecimal.ZERO;
             for (Cart item : cartItems) {
@@ -82,8 +101,9 @@ public class OrderService {
             order.setReceiverAddress(receiverAddress);
             order.setTotalAmount(totalAmount);
             order.setPaymentMethod(paymentMethod);
-            order.setOrderStatus(0);
+            order.setOrderStatus(OrderStatus.PENDING_PAYMENT);
             order.setCreateTime(LocalDateTime.now());
+            order.setShopId(shopId);
             int orderId = orderDAO.insert(order, conn);
 
             for (Cart item : cartItems) {
@@ -230,9 +250,13 @@ public class OrderService {
         Order order = orderDAO.findById(orderId);
         if (order == null) throw new Exception("订单不存在");
         if (!order.getUserId().equals(userId)) throw new Exception("无权操作");
-        if (order.getOrderStatus() != OrderStatus.DELIVERING) throw new Exception("当前状态不允许确认收货");
+        int status = order.getOrderStatus();
+        System.out.println("[Order] confirmReceive orderId=" + orderId + " userId=" + userId + " orderStatus=" + status);
+        if (status != OrderStatus.DELIVERING && status != 1 && status != 2) {
+            throw new Exception("当前状态不允许确认收货，当前状态：" + status);
+        }
         orderDAO.updateStatus(orderId, OrderStatus.COMPLETED);
-        writeLog(orderId, OrderStatus.DELIVERING, OrderStatus.COMPLETED, userId, 0, null);
+        writeLog(orderId, status, OrderStatus.COMPLETED, userId, 0, null);
     }
 
     public void userCancel(Integer orderId, Integer userId, String reason) throws Exception {
@@ -240,10 +264,10 @@ public class OrderService {
         if (order == null) throw new Exception("订单不存在");
         if (!order.getUserId().equals(userId)) throw new Exception("无权操作");
         int status = order.getOrderStatus();
-        if (status == OrderStatus.COMPLETED || status == OrderStatus.CANCELLED) {
+        if (status == OrderStatus.COMPLETED || status == OrderStatus.CANCELLED || status == 3) {
             throw new Exception("已完成或已取消的订单不能操作");
         }
-        if (status == OrderStatus.PREPARING || status == OrderStatus.DELIVERING) {
+        if (status == OrderStatus.PREPARING || status == OrderStatus.DELIVERING || status == 1 || status == 2) {
             throw new Exception("制作中和配送中的订单不能取消");
         }
         if (status == OrderStatus.ACCEPTED) {
@@ -281,6 +305,12 @@ public class OrderService {
             orderDAO.updateStatus(orderId, toStatus);
         }
         writeLog(orderId, fromStatus, toStatus, adminId, 1, reason);
+    }
+
+    // ========== 配送 ==========
+
+    public void updateDelivery(Integer orderId, Integer deliveryStatus, String deliveryPosition) throws Exception {
+        orderDAO.updateDelivery(orderId, deliveryStatus, deliveryPosition);
     }
 
     // ========== 日志 ==========

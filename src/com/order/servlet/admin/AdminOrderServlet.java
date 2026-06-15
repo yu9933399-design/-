@@ -90,13 +90,18 @@ public class AdminOrderServlet extends HttpServlet {
                 String orderIdStr = req.getParameter("orderId");
                 String action = req.getParameter("action");
                 String reason = req.getParameter("reason");
-                if (orderIdStr == null || action == null) {
+                String statusStr = req.getParameter("status");
+                if (orderIdStr == null) {
                     resp.getWriter().print("{\"success\":false,\"message\":\"参数不完整\"}");
                     return;
                 }
                 int orderId = Integer.parseInt(orderIdStr);
 
                 if (currentUser.getRole() == 2) {
+                    if (action == null) {
+                        resp.getWriter().print("{\"success\":false,\"message\":\"参数不完整\"}");
+                        return;
+                    }
                     switch (action) {
                         case "accept":
                             orderService.merchantAccept(orderId, currentUser.getUserId());
@@ -118,7 +123,6 @@ public class AdminOrderServlet extends HttpServlet {
                             return;
                     }
                 } else {
-                    String statusStr = req.getParameter("status");
                     if (statusStr == null) {
                         resp.getWriter().print("{\"success\":false,\"message\":\"缺少状态参数\"}");
                         return;

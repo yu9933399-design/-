@@ -10,17 +10,18 @@ public class OrderDAO {
 
     public int insert(Order order, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO `order` (order_no, user_id, receiver_name, receiver_phone, receiver_address, total_amount, payment_method, order_status, create_time) VALUES (?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO `order` (order_no, user_id, shop_id, receiver_name, receiver_phone, receiver_address, total_amount, payment_method, order_status, create_time) VALUES (?,?,?,?,?,?,?,?,?,?)",
                 Statement.RETURN_GENERATED_KEYS);
         ps.setString(1, order.getOrderNo());
         ps.setInt(2, order.getUserId());
-        ps.setString(3, order.getReceiverName());
-        ps.setString(4, order.getReceiverPhone());
-        ps.setString(5, order.getReceiverAddress());
-        ps.setBigDecimal(6, order.getTotalAmount());
-        ps.setString(7, order.getPaymentMethod());
-        ps.setInt(8, order.getOrderStatus());
-        ps.setTimestamp(9, Timestamp.valueOf(order.getCreateTime()));
+        if (order.getShopId() != null) ps.setInt(3, order.getShopId()); else ps.setNull(3, java.sql.Types.INTEGER);
+        ps.setString(4, order.getReceiverName());
+        ps.setString(5, order.getReceiverPhone());
+        ps.setString(6, order.getReceiverAddress());
+        ps.setBigDecimal(7, order.getTotalAmount());
+        ps.setString(8, order.getPaymentMethod());
+        ps.setInt(9, order.getOrderStatus());
+        ps.setTimestamp(10, Timestamp.valueOf(order.getCreateTime()));
         ps.executeUpdate();
         ResultSet rs = ps.getGeneratedKeys();
         int id = 0;
@@ -34,7 +35,7 @@ public class OrderDAO {
         Connection conn = DBUtil.getConnection();
         try {
             PreparedStatement ps = conn.prepareStatement(
-                    "SELECT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id WHERE o.user_id = ? ORDER BY o.create_time DESC");
+                    "SELECT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id WHERE o.user_id = ? ORDER BY CASE WHEN o.order_status IN (3,8,9) THEN 1 ELSE 0 END, o.create_time DESC");
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             List<Order> list = new ArrayList<>();
@@ -177,6 +178,8 @@ public class OrderDAO {
         o.setOrderId(rs.getInt("order_id"));
         o.setOrderNo(rs.getString("order_no"));
         o.setUserId(rs.getInt("user_id"));
+        int sid = rs.getInt("shop_id");
+        o.setShopId(rs.wasNull() ? null : sid);
         o.setReceiverName(rs.getString("receiver_name"));
         o.setReceiverPhone(rs.getString("receiver_phone"));
         o.setReceiverAddress(rs.getString("receiver_address"));
@@ -190,7 +193,25 @@ public class OrderDAO {
         Timestamp at = rs.getTimestamp("accept_time");
         if (at != null) o.setAcceptTime(at.toLocalDateTime());
         o.setCancelReason(rs.getString("cancel_reason"));
+        o.setDeliveryStatus(rs.getInt("delivery_status"));
+        o.setDeliveryPosition(rs.getString("delivery_position"));
         o.setUsername(rs.getString("username"));
         return o;
+    }
+
+    public int updateDelivery(Integer orderId, Integer deliveryStatus, String deliveryPosition) throws SQLException {
+        Connection conn = DBUtil.getConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                "UPDATE `order` SET delivery_status = ?, delivery_position = ? WHERE order_id = ?");
+            ps.setInt(1, deliveryStatus);
+            ps.setString(2, deliveryPosition);
+            ps.setInt(3, orderId);
+            int rows = ps.executeUpdate();
+            ps.close();
+            return rows;
+        } finally {
+            DBUtil.close(conn);
+        }
     }
 }

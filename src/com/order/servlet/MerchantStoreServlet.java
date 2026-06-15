@@ -34,7 +34,7 @@ public class MerchantStoreServlet extends HttpServlet {
                 return;
             }
 
-            List<Dish> dishes = dishService.findByMerchantId(merchantId);
+            List<Dish> dishes = dishService.findByMerchantIdFull(merchantId);
             List<Category> categories = categoryService.findAll();
 
             Map<Integer, List<Dish>> grouped = new LinkedHashMap<>();

@@ -83,4 +83,16 @@ public class DishService {
     public long countByMerchantId(Integer merchantId) throws Exception {
         return dishDAO.countByMerchantId(merchantId);
     }
+
+    public List<Dish> findSpecialDishes() throws Exception {
+        return dishDAO.findSpecialDishes();
+    }
+
+    public List<Dish> findPreviewDishesByMerchant(Integer merchantId, int limit) throws Exception {
+        return dishDAO.findPreviewDishesByMerchant(merchantId, limit);
+    }
+
+    public List<Dish> findByMerchantIdFull(Integer merchantId) throws Exception {
+        return dishDAO.findByMerchantIdFull(merchantId);
+    }
 }

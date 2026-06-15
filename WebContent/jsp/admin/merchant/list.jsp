@@ -19,6 +19,19 @@
 <div class="flex-grow-1">
 <h6 class="fw-bold mb-0"><c:out value="${m.realName}"/></h6>
 <small class="text-muted"><c:out value="${m.username}"/></small>
+<div class="mt-1">
+<select class="form-select form-select-sm shop-cat-select" data-uid="${m.userId}" style="width:auto;font-size:12px;">
+<option value="">未分类</option>
+<option value="快餐简餐" ${m.shopCategory == '快餐简餐' ? 'selected' : ''}>快餐简餐</option>
+<option value="奶茶饮品" ${m.shopCategory == '奶茶饮品' ? 'selected' : ''}>奶茶饮品</option>
+<option value="川湘辣味" ${m.shopCategory == '川湘辣味' ? 'selected' : ''}>川湘辣味</option>
+<option value="粤菜海鲜" ${m.shopCategory == '粤菜海鲜' ? 'selected' : ''}>粤菜海鲜</option>
+<option value="甜品小吃" ${m.shopCategory == '甜品小吃' ? 'selected' : ''}>甜品小吃</option>
+<option value="早餐早点" ${m.shopCategory == '早餐早点' ? 'selected' : ''}>早餐早点</option>
+<option value="面食粥品" ${m.shopCategory == '面食粥品' ? 'selected' : ''}>面食粥品</option>
+<option value="轻食沙拉" ${m.shopCategory == '轻食沙拉' ? 'selected' : ''}>轻食沙拉</option>
+</select>
+</div>
 </div>
 <a href="${pageContext.request.contextPath}/admin/merchant/detail?id=${m.userId}" class="btn btn-outline-primary btn-sm"><i class="fas fa-search me-1"></i>查看</a>
 </div>
@@ -29,4 +42,14 @@
 </c:otherwise>
 </c:choose>
 </div></div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+$(document).on('change','.shop-cat-select',function(){
+    var uid=$(this).data('uid'),cat=$(this).val();
+    $.post('${pageContext.request.contextPath}/admin/merchant/updateCategory',{userId:uid,shopCategory:cat},function(r){
+        if(!r.success) alert(r.message||'设置失败');
+    },'json');
+});
+</script>
+</body></html>

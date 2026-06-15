@@ -14,6 +14,7 @@
 <c:when test="${sessionScope.user.role == 1}">
 <a href="${pageContext.request.contextPath}/admin/merchant" class="list-group-item bg-dark text-white border-0"><i class="fas fa-store me-2"></i>商家管理</a>
 <a href="${pageContext.request.contextPath}/admin/user" class="list-group-item bg-dark text-white border-0 d-flex justify-content-between align-items-center"><span><i class="fas fa-users me-2"></i>用户管理</span><c:if test="${pendingMerchantCount > 0}"><span class="badge bg-danger">${pendingMerchantCount}</span></c:if></a>
+<a href="${pageContext.request.contextPath}/admin/banner" class="list-group-item bg-dark text-white border-0"><i class="fas fa-images me-2"></i>轮播管理</a>
 <a href="${pageContext.request.contextPath}/admin/message/list" class="list-group-item bg-dark text-white border-0"><i class="fas fa-envelope me-2"></i>消息中心</a>
 </c:when>
 <c:when test="${sessionScope.user.role == 2}">
@@ -21,6 +22,7 @@
 <a href="${pageContext.request.contextPath}/admin/category" class="list-group-item bg-dark text-white border-0"><i class="fas fa-tags me-2"></i>分类管理</a>
 <a href="${pageContext.request.contextPath}/admin/order" class="list-group-item bg-dark text-white border-0"><i class="fas fa-receipt me-2"></i>我的订单</a>
 <a href="${pageContext.request.contextPath}/merchant/message/list" class="list-group-item bg-dark text-white border-0"><i class="fas fa-envelope me-2"></i>消息中心</a>
+<a href="${pageContext.request.contextPath}/merchant/settings" class="list-group-item bg-dark text-white border-0"><i class="fas fa-cog me-2"></i>店铺设置</a>
 </c:when>
 </c:choose>
 <a href="${pageContext.request.contextPath}/logout" class="list-group-item bg-dark text-white border-0 text-danger"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a>

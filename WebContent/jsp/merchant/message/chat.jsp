@@ -11,23 +11,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/custom.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 <div class="d-flex">
-    <div class="bg-dark text-white" style="width: 250px; min-height: 100vh;">
-        <div class="p-3">
-            <h5><i class="fas fa-store me-2"></i>商家后台</h5>
-        </div>
-        <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link text-white" href="${pageContext.request.contextPath}/merchant/store"><i class="fas fa-home me-2"></i>店铺管理</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="${pageContext.request.contextPath}/merchant/orders"><i class="fas fa-shopping-bag me-2"></i>订单管理</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="${pageContext.request.contextPath}/merchant/message/list"><i class="fas fa-envelope me-2"></i>消息中心</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
-        </ul>
-    </div>
+    <jsp:include page="/jsp/common/admin-sidebar.jsp"/>
     <div class="flex-grow-1">
         <nav class="navbar navbar-light bg-white shadow-sm">
             <div class="container-fluid">
-                <span class="navbar-brand">聊天</span>
+                <span class="navbar-brand fw-bold"><i class="fas fa-comments text-primary me-2"></i>聊天</span>
                 <span class="text-muted">欢迎，${sessionScope.user.username}</span>
             </div>
         </nav>

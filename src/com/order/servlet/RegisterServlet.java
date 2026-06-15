@@ -23,10 +23,11 @@ public class RegisterServlet extends HttpServlet {
         String email = req.getParameter("email");
         String type = req.getParameter("type");
         String shopName = req.getParameter("shopName");
+        String shopCategory = req.getParameter("shopCategory");
         boolean isMerchant = "merchant".equals(type);
 
         try {
-            userService.register(username, password, phone, email, isMerchant, shopName);
+            userService.register(username, password, phone, email, isMerchant, shopName, shopCategory);
             if (isMerchant) {
                 req.setAttribute("success", "商家入驻申请已提交，管理员审核通过后方可登录，请耐心等待");
                 req.setAttribute("type", "merchant");

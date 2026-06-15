@@ -30,6 +30,10 @@ public class CartService {
         return cartDAO.findByUserId(userId);
     }
 
+    public List<Cart> getCartByUserIdAndShopId(Integer userId, Integer shopId) throws Exception {
+        return cartDAO.findByUserIdAndShopId(userId, shopId);
+    }
+
     public void updateQuantity(Integer cartId, Integer quantity) throws Exception {
         if (quantity == null || quantity <= 0) {
             throw new Exception("数量必须大于0");

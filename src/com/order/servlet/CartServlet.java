@@ -9,6 +9,7 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.io.PrintWriter;
 
 @WebServlet("/cart")
 public class CartServlet extends HttpServlet {
@@ -38,5 +39,28 @@ public class CartServlet extends HttpServlet {
             e.printStackTrace();
         }
         req.getRequestDispatcher("/jsp/user/cart.jsp").forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = resp.getWriter();
+        HttpSession session = req.getSession();
+        User user = (session != null) ? (User) session.getAttribute("user") : null;
+        if (user == null) {
+            out.print("{\"success\":false}");
+            return;
+        }
+        String action = req.getParameter("action");
+        if ("clear".equals(action)) {
+            try {
+                cartService.clearCart(user.getUserId());
+                out.print("{\"success\":true}");
+            } catch (Exception e) {
+                out.print("{\"success\":false}");
+            }
+        } else {
+            out.print("{\"success\":false}");
+        }
     }
 }

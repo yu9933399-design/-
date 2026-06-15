@@ -45,6 +45,7 @@
 <i class="fas fa-utensils fa-2x text-primary mb-2"></i>
 <h5>${dishCount}</h5>
 <p class="text-muted">全平台菜品</p>
+<a href="${pageContext.request.contextPath}/admin/dish" class="stretched-link"></a>
 </div>
 </div>
 <div class="col-md-3">
@@ -52,6 +53,7 @@
 <i class="fas fa-receipt fa-2x text-warning mb-2"></i>
 <h5>${orderCount}</h5>
 <p class="text-muted">全平台订单</p>
+<a href="${pageContext.request.contextPath}/admin/order" class="stretched-link"></a>
 </div>
 </div>
 </c:if>

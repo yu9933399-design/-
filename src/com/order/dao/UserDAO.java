@@ -19,10 +19,10 @@ public class UserDAO extends BaseDAO {
     }
 
     public int insert(User user) throws SQLException {
-        return update("INSERT INTO user (username, password, real_name, phone, email, address, role, status) VALUES (?,?,?,?,?,?,?,?)",
+        return update("INSERT INTO user (username, password, real_name, phone, email, address, role, status, shop_category) VALUES (?,?,?,?,?,?,?,?,?)",
                 user.getUsername(), user.getPassword(), user.getRealName(),
                 user.getPhone(), user.getEmail(), user.getAddress(),
-                user.getRole(), user.getStatus());
+                user.getRole(), user.getStatus(), user.getShopCategory());
     }
 
     public int update(User user) throws SQLException {
@@ -57,5 +57,21 @@ public class UserDAO extends BaseDAO {
 
     public List<User> findAllByRoleAndStatus(Integer role, Integer status) throws SQLException {
         return queryList(User.class, "SELECT * FROM user WHERE role = ? AND status = ? ORDER BY user_id DESC", role, status);
+    }
+
+    public List<User> findMerchantsByCategory(String category) throws SQLException {
+        if (category == null || category.trim().isEmpty()) {
+            return findAllByRoleAndStatus(2, 0);
+        }
+        return queryList(User.class, "SELECT * FROM user WHERE role = 2 AND status = 0 AND shop_category = ? ORDER BY user_id DESC", category.trim());
+    }
+
+    public int updateShopCategory(Integer userId, String shopCategory) throws SQLException {
+        return update("UPDATE user SET shop_category = ? WHERE user_id = ?", shopCategory, userId);
+    }
+
+    public int updateMerchantSettings(User user) throws SQLException {
+        return update("UPDATE user SET real_name = ?, phone = ?, shop_category = ? WHERE user_id = ?",
+                user.getRealName(), user.getPhone(), user.getShopCategory(), user.getUserId());
     }
 }

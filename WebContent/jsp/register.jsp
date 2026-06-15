@@ -16,6 +16,18 @@
 <div class="mb-3"><label class="form-label">邮箱</label><input type="email" class="form-control" name="email" placeholder="请输入邮箱"></div>
 <c:if test="${param.type == 'merchant'}">
 <div class="mb-3"><label class="form-label">店铺名称 *</label><input type="text" class="form-control" name="shopName" required placeholder="请输入店铺名称"></div>
+<div class="mb-3"><label class="form-label">店铺分类 *</label>
+<select class="form-select" name="shopCategory" required>
+<option value="">请选择分类</option>
+<option value="快餐简餐">快餐简餐</option>
+<option value="奶茶饮品">奶茶饮品</option>
+<option value="川湘辣味">川湘辣味</option>
+<option value="粤菜海鲜">粤菜海鲜</option>
+<option value="甜品小吃">甜品小吃</option>
+<option value="早餐早点">早餐早点</option>
+<option value="面食粥品">面食粥品</option>
+<option value="轻食沙拉">轻食沙拉</option>
+</select></div>
 </c:if>
 <button type="submit" class="btn btn-primary w-100 py-2">${param.type == 'merchant' ? '申请商家入驻' : '注册'}</button>
 </form>

@@ -23,7 +23,19 @@ public class CheckoutServlet extends HttpServlet {
             return;
         }
         try {
-            List<Cart> cartItems = cartService.getCartByUserId(user.getUserId());
+            Integer shopId = null;
+            String shopIdStr = req.getParameter("shopId");
+            if (shopIdStr != null && !shopIdStr.isEmpty()) {
+                try { shopId = Integer.parseInt(shopIdStr); } catch (NumberFormatException e) {}
+            }
+
+            List<Cart> cartItems;
+            if (shopId != null) {
+                cartItems = cartService.getCartByUserIdAndShopId(user.getUserId(), shopId);
+            } else {
+                cartItems = cartService.getCartByUserId(user.getUserId());
+            }
+
             BigDecimal total = BigDecimal.ZERO;
             if (cartItems != null) {
                 for (Cart item : cartItems) {
@@ -35,6 +47,7 @@ public class CheckoutServlet extends HttpServlet {
             req.setAttribute("cartItems", cartItems);
             req.setAttribute("total", total);
             req.setAttribute("user", user);
+            req.setAttribute("shopId", shopId);
         } catch (Exception e) {
             e.printStackTrace();
         }

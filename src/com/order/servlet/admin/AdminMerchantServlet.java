@@ -91,6 +91,18 @@ public class AdminMerchantServlet extends HttpServlet {
                     resp.getWriter().print("{\"success\":false}");
                 }
             }
+        } else if ("/updateCategory".equals(path)) {
+            String uidStr = req.getParameter("userId");
+            String category = req.getParameter("shopCategory");
+            resp.setContentType("application/json;charset=UTF-8");
+            try {
+                int uid = Integer.parseInt(uidStr);
+                // 通过 UserService 更新 shop_category
+                new com.order.service.UserService().updateShopCategory(uid, category);
+                resp.getWriter().print("{\"success\":true}");
+            } catch (Exception e) {
+                resp.getWriter().print("{\"success\":false,\"message\":\"" + (e.getMessage()!=null ? e.getMessage().replace("\"","'") : "更新失败") + "\"}");
+            }
         }
     }
 }

@@ -10,6 +10,7 @@ public class User {
     private String address;
     private Integer role;
     private Integer status;
+    private String shopCategory;
 
     public User() {}
 
@@ -31,4 +32,6 @@ public class User {
     public void setRole(Integer role) { this.role = role; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+    public String getShopCategory() { return shopCategory; }
+    public void setShopCategory(String shopCategory) { this.shopCategory = shopCategory; }
 }

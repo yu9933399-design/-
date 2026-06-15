@@ -2,6 +2,7 @@ package com.order.servlet;
 
 import com.order.entity.Order;
 import com.order.entity.OrderItem;
+import com.order.entity.OrderStatus;
 import com.order.entity.User;
 import com.order.service.OrderService;
 import javax.servlet.ServletException;
@@ -67,11 +68,11 @@ public class PayServlet extends HttpServlet {
         try {
             int orderId = Integer.parseInt(orderIdStr);
             Order order = orderService.getOrderById(orderId);
-            if (order != null && order.getUserId().equals(user.getUserId()) && order.getOrderStatus() == 0) {
+            if (order != null && order.getUserId().equals(user.getUserId()) && (order.getOrderStatus() == OrderStatus.PENDING_PAYMENT || order.getOrderStatus() == 0)) {
                 if (paymentMethod != null && !paymentMethod.trim().isEmpty()) {
                     orderService.updateOrderPaymentMethod(orderId, paymentMethod.trim());
                 }
-                orderService.updateOrderStatus(orderId, 2);
+                orderService.updateOrderStatus(orderId, OrderStatus.PENDING_ACCEPT);
             }
             resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId);
         } catch (Exception e) {

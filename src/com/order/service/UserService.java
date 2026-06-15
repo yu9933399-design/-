@@ -8,7 +8,7 @@ import java.util.List;
 public class UserService {
     private UserDAO userDAO = new UserDAO();
 
-    public User register(String username, String password, String phone, String email, boolean isMerchant, String shopName) throws Exception {
+    public User register(String username, String password, String phone, String email, boolean isMerchant, String shopName, String shopCategory) throws Exception {
         if (username == null || username.trim().isEmpty()) {
             throw new Exception("用户名不能为空");
         }
@@ -42,6 +42,7 @@ public class UserService {
         if (isMerchant) {
             user.setRole(2);
             user.setStatus(2);
+            user.setShopCategory(shopCategory);
         } else {
             user.setRole(0);
             user.setStatus(0);
@@ -128,5 +129,17 @@ public class UserService {
 
     public List<User> findAllByRoleAndStatus(Integer role, Integer status) throws Exception {
         return userDAO.findAllByRoleAndStatus(role, status);
+    }
+
+    public List<User> findMerchantsByCategory(String category) throws Exception {
+        return userDAO.findMerchantsByCategory(category);
+    }
+
+    public void updateShopCategory(Integer userId, String shopCategory) throws Exception {
+        userDAO.updateShopCategory(userId, shopCategory);
+    }
+
+    public void updateMerchantSettings(User user) throws Exception {
+        userDAO.updateMerchantSettings(user);
     }
 }

@@ -11,8 +11,16 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/custom.css" rel="stylesheet">
+    <style>
+    /* 全局 flex 粘性底部布局 */
+    html,body{height:100%;margin:0;padding:0}
+    body{display:flex;flex-direction:column;min-height:100vh}
+    .page-wrap{flex:1;display:flex;flex-direction:column}
+    .page-content{flex:1}
+    </style>
 </head>
 <body>
+<div class="page-wrap">
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="${pageContext.request.contextPath}/">

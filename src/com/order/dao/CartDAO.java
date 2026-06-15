@@ -7,7 +7,11 @@ import java.util.List;
 public class CartDAO extends BaseDAO {
 
     public List<Cart> findByUserId(Integer userId) throws SQLException {
-        return queryList(Cart.class, "SELECT c.*, d.dish_name, d.price, d.image_url FROM cart c LEFT JOIN dish d ON c.dish_id = d.dish_id WHERE c.user_id = ? ORDER BY c.add_time DESC", userId);
+        return queryList(Cart.class, "SELECT c.*, d.dish_name, d.price, d.image_url, d.merchant_id AS shop_id FROM cart c LEFT JOIN dish d ON c.dish_id = d.dish_id WHERE c.user_id = ? ORDER BY c.add_time DESC", userId);
+    }
+
+    public List<Cart> findByUserIdAndShopId(Integer userId, Integer shopId) throws SQLException {
+        return queryList(Cart.class, "SELECT c.*, d.dish_name, d.price, d.image_url, d.merchant_id AS shop_id FROM cart c LEFT JOIN dish d ON c.dish_id = d.dish_id WHERE c.user_id = ? AND d.merchant_id = ? ORDER BY c.add_time DESC", userId, shopId);
     }
 
     public Cart findByUserAndDish(Integer userId, Integer dishId) throws SQLException {

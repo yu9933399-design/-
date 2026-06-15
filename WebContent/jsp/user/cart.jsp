@@ -5,7 +5,7 @@
 <div class="container mt-4">
 <h3 class="fw-bold mb-4"><i class="fas fa-shopping-cart text-primary me-2"></i>我的购物车</h3>
 <c:choose>
-<c:when test="${empty cartItems}"><div class="text-center py-5"><i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i><p class="text-muted">购物车还是空的哦~</p><a href="${pageContext.request.contextPath}/dish/list" class="btn btn-primary">去点餐</a></div></c:when>
+<c:when test="${empty cartItems}"><div class="text-center py-5"><i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i><p class="text-muted">购物车还是空的哦~</p><a href="${pageContext.request.contextPath}/" class="btn btn-primary">去点餐</a></div></c:when>
 <c:otherwise>
 <div class="card border-0 shadow-sm"><div class="card-body"><table class="table table-hover align-middle">
 <thead class="table-light"><tr><th>商品</th><th>单价</th><th>数量</th><th>小计</th><th>操作</th></tr></thead>

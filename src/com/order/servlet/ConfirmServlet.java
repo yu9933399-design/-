@@ -33,19 +33,20 @@ public class ConfirmServlet extends HttpServlet {
             switch (action) {
                 case "confirmReceive":
                     orderService.userConfirmReceive(orderId, user.getUserId());
-                    resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId + "&success=确认收货成功");
+                    resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId + "&success=" + java.net.URLEncoder.encode("确认收货成功", "UTF-8"));
                     break;
                 case "cancel":
                     String reason = req.getParameter("reason");
                     orderService.userCancel(orderId, user.getUserId(), reason);
-                    resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId + "&success=取消成功");
+                    resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderId + "&success=" + java.net.URLEncoder.encode("取消成功", "UTF-8"));
                     break;
                 default:
                     resp.sendRedirect(req.getContextPath() + "/order/list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderIdStr + "&error=" + java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
+            String errMsg = e.getMessage() != null ? e.getMessage() : "操作失败";
+            resp.sendRedirect(req.getContextPath() + "/order/detail?id=" + orderIdStr + "&error=" + java.net.URLEncoder.encode(errMsg, "UTF-8"));
         }
     }
 }

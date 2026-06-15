@@ -5,6 +5,7 @@
 <h3 class="fw-bold mb-4"><i class="fas fa-credit-card text-primary me-2"></i>确认订单</h3>
 <c:if test="${error != null}"><div class="alert alert-danger">${error}</div></c:if>
 <form method="post" action="${pageContext.request.contextPath}/order/submit">
+<c:if test="${shopId != null}"><input type="hidden" name="shopId" value="${shopId}"/></c:if>
 <div class="row"><div class="col-md-8">
 <div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white fw-bold">收货信息</div><div class="card-body">
 <div class="row mb-3"><div class="col-md-6"><label class="form-label">收货人姓名 *</label><input type="text" class="form-control" name="receiverName" value="${user.realName}" required></div><div class="col-md-6"><label class="form-label">手机号码 *</label><input type="text" class="form-control" name="receiverPhone" value="${user.phone}" required></div></div>

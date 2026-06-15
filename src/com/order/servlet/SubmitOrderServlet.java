@@ -25,6 +25,11 @@ public class SubmitOrderServlet extends HttpServlet {
         String receiverPhone = req.getParameter("receiverPhone");
         String receiverAddress = req.getParameter("receiverAddress");
         String paymentMethod = req.getParameter("paymentMethod");
+        Integer shopId = null;
+        String shopIdStr = req.getParameter("shopId");
+        if (shopIdStr != null && !shopIdStr.isEmpty()) {
+            try { shopId = Integer.parseInt(shopIdStr); } catch (NumberFormatException e) {}
+        }
 
         if (receiverName == null || receiverName.trim().isEmpty() ||
             receiverPhone == null || receiverPhone.trim().isEmpty() ||
@@ -36,7 +41,7 @@ public class SubmitOrderServlet extends HttpServlet {
 
         try {
             Order order = orderService.submitOrder(user.getUserId(), receiverName.trim(),
-                    receiverPhone.trim(), receiverAddress.trim(), paymentMethod);
+                    receiverPhone.trim(), receiverAddress.trim(), paymentMethod, shopId);
             resp.sendRedirect(req.getContextPath() + "/order/pay?id=" + order.getOrderId());
         } catch (Exception e) {
             req.setAttribute("error", e.getMessage());

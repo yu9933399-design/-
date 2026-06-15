@@ -7,6 +7,7 @@ public class Cart {
     private Integer cartId;
     private Integer userId;
     private Integer dishId;
+    private Integer shopId;
     private Integer quantity;
     private LocalDateTime addTime;
 
@@ -22,6 +23,8 @@ public class Cart {
     public void setUserId(Integer userId) { this.userId = userId; }
     public Integer getDishId() { return dishId; }
     public void setDishId(Integer dishId) { this.dishId = dishId; }
+    public Integer getShopId() { return shopId; }
+    public void setShopId(Integer shopId) { this.shopId = shopId; }
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
     public LocalDateTime getAddTime() { return addTime; }

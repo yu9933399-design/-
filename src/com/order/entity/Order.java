@@ -7,6 +7,7 @@ public class Order {
     private Integer orderId;
     private String orderNo;
     private Integer userId;
+    private Integer shopId;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;
@@ -17,6 +18,8 @@ public class Order {
     private LocalDateTime payTime;
     private LocalDateTime acceptTime;
     private String cancelReason;
+    private Integer deliveryStatus;
+    private String deliveryPosition;
 
     private String username;
 
@@ -28,6 +31,8 @@ public class Order {
     public void setOrderNo(String orderNo) { this.orderNo = orderNo; }
     public Integer getUserId() { return userId; }
     public void setUserId(Integer userId) { this.userId = userId; }
+    public Integer getShopId() { return shopId; }
+    public void setShopId(Integer shopId) { this.shopId = shopId; }
     public String getReceiverName() { return receiverName; }
     public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
     public String getReceiverPhone() { return receiverPhone; }
@@ -48,6 +53,10 @@ public class Order {
     public void setAcceptTime(LocalDateTime acceptTime) { this.acceptTime = acceptTime; }
     public String getCancelReason() { return cancelReason; }
     public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+    public Integer getDeliveryStatus() { return deliveryStatus; }
+    public void setDeliveryStatus(Integer deliveryStatus) { this.deliveryStatus = deliveryStatus; }
+    public String getDeliveryPosition() { return deliveryPosition; }
+    public void setDeliveryPosition(String deliveryPosition) { this.deliveryPosition = deliveryPosition; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 }

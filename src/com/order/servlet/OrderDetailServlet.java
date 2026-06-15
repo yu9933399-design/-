@@ -32,6 +32,8 @@ public class OrderDetailServlet extends HttpServlet {
                     List<OrderItem> items = orderService.getOrderItems(orderId);
                     req.setAttribute("order", order);
                     req.setAttribute("items", items);
+                    boolean canDirectCancel = orderService.canUserDirectCancel(orderId);
+                    req.setAttribute("canDirectCancel", canDirectCancel);
                 } else {
                     req.setAttribute("error", "订单不存在");
                 }
