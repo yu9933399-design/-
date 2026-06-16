@@ -13,8 +13,7 @@
 </div></div>
 <div class="card border-0 shadow-sm mb-3"><div class="card-header bg-white fw-bold">支付方式</div><div class="card-body">
 <div class="form-check mb-2"><input class="form-check-input" type="radio" name="paymentMethod" value="微信支付" id="wechat" checked><label class="form-check-label" for="wechat"><i class="fab fa-weixin text-success me-2"></i>微信支付</label></div>
-<div class="form-check mb-2"><input class="form-check-input" type="radio" name="paymentMethod" value="支付宝支付" id="alipay"><label class="form-check-label" for="alipay"><i class="fab fa-alipay text-primary me-2"></i>支付宝支付</label></div>
-<div class="form-check"><input class="form-check-input" type="radio" name="paymentMethod" value="货到付款" id="cod"><label class="form-check-label" for="cod"><i class="fas fa-money-bill-wave text-warning me-2"></i>货到付款</label></div>
+<div class="form-check"><input class="form-check-input" type="radio" name="paymentMethod" value="支付宝支付" id="alipay"><label class="form-check-label" for="alipay"><i class="fab fa-alipay text-primary me-2"></i>支付宝支付</label></div>
 </div></div>
 </div><div class="col-md-4"><div class="card border-0 shadow-sm"><div class="card-header bg-white fw-bold">订单摘要</div><div class="card-body">
 <c:forEach items="${cartItems}" var="item"><div class="d-flex justify-content-between mb-1"><span class="text-muted">${item.dishName} x${item.quantity}</span><span>&#165;${item.price * item.quantity}</span></div></c:forEach>

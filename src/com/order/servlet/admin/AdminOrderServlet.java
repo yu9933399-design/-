@@ -57,19 +57,50 @@ public class AdminOrderServlet extends HttpServlet {
             req.getRequestDispatcher("/jsp/admin/order/detail.jsp").forward(req, resp);
         } else {
             try {
+                String keyword = req.getParameter("keyword");
+                String sort = req.getParameter("sort");
+                int page = 1;
+                int pageSize = 8;
+                try {
+                    String pageStr = req.getParameter("page");
+                    if (pageStr != null && !pageStr.isEmpty()) page = Integer.parseInt(pageStr);
+                } catch (NumberFormatException e) {}
+                if (page < 1) page = 1;
+
                 List<Order> orders;
+                long total;
                 if (currentUser.getRole() == 1) {
                     req.setAttribute("merchants", userService.findAllByRoleAndStatus(2, 0));
                     String merchIdStr = req.getParameter("merchantId");
                     if (merchIdStr != null && !merchIdStr.isEmpty()) {
-                        orders = orderService.getOrdersByMerchantId(Integer.parseInt(merchIdStr));
+                        int merchId = Integer.parseInt(merchIdStr);
+                        total = orderService.countOrdersByMerchantId(merchId, keyword);
+                        int totalPages = (int) Math.ceil((double) total / pageSize);
+                        if (totalPages < 1) totalPages = 1;
+                        if (page > totalPages) page = totalPages;
+                        orders = orderService.getOrdersByMerchantId(merchId, keyword, sort, page, pageSize);
+                        req.setAttribute("merchantId", merchId);
                     } else {
-                        orders = orderService.getAllOrders();
+                        total = orderService.countAllOrders(keyword);
+                        int totalPages = (int) Math.ceil((double) total / pageSize);
+                        if (totalPages < 1) totalPages = 1;
+                        if (page > totalPages) page = totalPages;
+                        orders = orderService.getAllOrders(keyword, sort, page, pageSize);
                     }
                 } else {
-                    orders = orderService.getOrdersByMerchantId(currentUser.getUserId());
+                    total = orderService.countOrdersByMerchantId(currentUser.getUserId(), keyword);
+                    int totalPages = (int) Math.ceil((double) total / pageSize);
+                    if (totalPages < 1) totalPages = 1;
+                    if (page > totalPages) page = totalPages;
+                    orders = orderService.getOrdersByMerchantId(currentUser.getUserId(), keyword, sort, page, pageSize);
                 }
+                int totalPages = (int) Math.ceil((double) total / pageSize);
+                if (totalPages < 1) totalPages = 1;
                 req.setAttribute("orders", orders);
+                req.setAttribute("keyword", keyword);
+                req.setAttribute("sort", sort);
+                req.setAttribute("currentPage", page);
+                req.setAttribute("totalPages", totalPages);
             } catch (Exception e) { e.printStackTrace(); }
             req.getRequestDispatcher("/jsp/admin/order/list.jsp").forward(req, resp);
         }

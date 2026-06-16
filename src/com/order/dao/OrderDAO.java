@@ -32,11 +32,24 @@ public class OrderDAO {
     }
 
     public List<Order> findByUserId(Integer userId) throws SQLException {
+        return findByUserId(userId, null);
+    }
+
+    public List<Order> findByUserId(Integer userId, String sort) throws SQLException {
+        return findByUserId(userId, sort, 1, 9999);
+    }
+
+    public List<Order> findByUserId(Integer userId, String sort, int page, int pageSize) throws SQLException {
         Connection conn = DBUtil.getConnection();
         try {
+            String orderClause = "time".equals(sort) ? " ORDER BY o.create_time DESC"
+                : " ORDER BY CASE WHEN o.order_status IN (3,8,9) THEN 1 ELSE 0 END, o.create_time DESC";
+            int offset = (page - 1) * pageSize;
             PreparedStatement ps = conn.prepareStatement(
-                    "SELECT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id WHERE o.user_id = ? ORDER BY CASE WHEN o.order_status IN (3,8,9) THEN 1 ELSE 0 END, o.create_time DESC");
+                    "SELECT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id WHERE o.user_id = ?" + orderClause + " LIMIT ?, ?");
             ps.setInt(1, userId);
+            ps.setInt(2, offset);
+            ps.setInt(3, pageSize);
             ResultSet rs = ps.executeQuery();
             List<Order> list = new ArrayList<>();
             while (rs.next()) list.add(mapRow(rs));
@@ -48,11 +61,23 @@ public class OrderDAO {
         }
     }
 
-    public List<Order> findAll() throws SQLException {
+    // 管理员查询：支持用户名搜索 + 排序 + 分页
+    public List<Order> findAll(String keyword, String sort, int page, int pageSize) throws SQLException {
         Connection conn = DBUtil.getConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement(
-                    "SELECT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id ORDER BY o.create_time DESC");
+            StringBuilder sql = new StringBuilder("SELECT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id WHERE 1=1");
+            java.util.List<Object> params = new java.util.ArrayList<>();
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                sql.append(" AND u.username LIKE ?");
+                params.add("%" + keyword.trim() + "%");
+            }
+            sql.append(getOrderSortClause(sort));
+            int offset = (page - 1) * pageSize;
+            sql.append(" LIMIT ?, ?");
+            params.add(offset);
+            params.add(pageSize);
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
             ResultSet rs = ps.executeQuery();
             List<Order> list = new ArrayList<>();
             while (rs.next()) list.add(mapRow(rs));
@@ -62,6 +87,112 @@ public class OrderDAO {
         } finally {
             DBUtil.close(conn);
         }
+    }
+
+    public List<Order> findAll(String keyword, String sort) throws SQLException {
+        return findAll(keyword, sort, 1, 9999);
+    }
+
+    // 商家查询：支持用户名搜索 + 排序 + 分页
+    public List<Order> findOrdersByMerchantId(Integer merchantId, String keyword, String sort, int page, int pageSize) throws SQLException {
+        Connection conn = DBUtil.getConnection();
+        try {
+            StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id "
+                + "LEFT JOIN order_item oi ON o.order_id = oi.order_id "
+                + "WHERE oi.dish_id IN (SELECT dish_id FROM dish WHERE merchant_id = ?)");
+            java.util.List<Object> params = new java.util.ArrayList<>();
+            params.add(merchantId);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                sql.append(" AND u.username LIKE ?");
+                params.add("%" + keyword.trim() + "%");
+            }
+            sql.append(getOrderSortClause(sort));
+            int offset = (page - 1) * pageSize;
+            sql.append(" LIMIT ?, ?");
+            params.add(offset);
+            params.add(pageSize);
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            ResultSet rs = ps.executeQuery();
+            List<Order> list = new ArrayList<>();
+            while (rs.next()) list.add(mapRow(rs));
+            rs.close();
+            ps.close();
+            return list;
+        } finally {
+            DBUtil.close(conn);
+        }
+    }
+
+    public List<Order> findOrdersByMerchantId(Integer merchantId, String keyword, String sort) throws SQLException {
+        return findOrdersByMerchantId(merchantId, keyword, sort, 1, 9999);
+    }
+
+    // 排序逻辑：默认排序（未完成优先+时间倒序）或仅按时间倒序
+    private String getOrderSortClause(String sort) {
+        if ("time".equals(sort)) {
+            return " ORDER BY o.create_time DESC";
+        }
+        return " ORDER BY CASE WHEN o.order_status IN (3,8,9) THEN 1 ELSE 0 END, o.create_time DESC";
+    }
+
+    // 用户订单计数
+    public long countByUserId(Integer userId) throws SQLException {
+        Connection conn = DBUtil.getConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM `order` WHERE user_id = ?");
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            long count = 0;
+            if (rs.next()) count = rs.getLong(1);
+            rs.close(); ps.close();
+            return count;
+        } finally { DBUtil.close(conn); }
+    }
+
+    // 管理员订单计数
+    public long countAll(String keyword) throws SQLException {
+        Connection conn = DBUtil.getConnection();
+        try {
+            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id WHERE 1=1");
+            java.util.List<Object> params = new java.util.ArrayList<>();
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                sql.append(" AND u.username LIKE ?");
+                params.add("%" + keyword.trim() + "%");
+            }
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            ResultSet rs = ps.executeQuery();
+            long count = 0;
+            if (rs.next()) count = rs.getLong(1);
+            rs.close(); ps.close();
+            return count;
+        } finally { DBUtil.close(conn); }
+    }
+
+    // 商家订单计数
+    public long countByMerchantId(Integer merchantId, String keyword) throws SQLException {
+        Connection conn = DBUtil.getConnection();
+        try {
+            StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id "
+                + "LEFT JOIN order_item oi ON o.order_id = oi.order_id "
+                + "WHERE oi.dish_id IN (SELECT dish_id FROM dish WHERE merchant_id = ?)");
+            java.util.List<Object> params = new java.util.ArrayList<>();
+            params.add(merchantId);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                sql.append(" AND u.username LIKE ?");
+                params.add("%" + keyword.trim() + "%");
+            }
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            ResultSet rs = ps.executeQuery();
+            long count = 0;
+            if (rs.next()) count = rs.getLong(1);
+            rs.close(); ps.close();
+            return count;
+        } finally { DBUtil.close(conn); }
     }
 
     public Order findById(Integer orderId) throws SQLException {
@@ -148,26 +279,6 @@ public class OrderDAO {
             int rows = ps.executeUpdate();
             ps.close();
             return rows;
-        } finally {
-            DBUtil.close(conn);
-        }
-    }
-
-    public List<Order> findOrdersByMerchantId(Integer merchantId) throws SQLException {
-        Connection conn = DBUtil.getConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement(
-                    "SELECT DISTINCT o.*, u.username FROM `order` o LEFT JOIN `user` u ON o.user_id = u.user_id "
-                    + "LEFT JOIN order_item oi ON o.order_id = oi.order_id "
-                    + "WHERE oi.dish_id IN (SELECT dish_id FROM dish WHERE merchant_id = ?) "
-                    + "ORDER BY o.create_time DESC");
-            ps.setInt(1, merchantId);
-            ResultSet rs = ps.executeQuery();
-            List<Order> list = new ArrayList<>();
-            while (rs.next()) list.add(mapRow(rs));
-            rs.close();
-            ps.close();
-            return list;
         } finally {
             DBUtil.close(conn);
         }

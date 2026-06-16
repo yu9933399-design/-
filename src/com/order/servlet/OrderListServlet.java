@@ -22,8 +22,25 @@ public class OrderListServlet extends HttpServlet {
             return;
         }
         try {
-            List<Order> orders = orderService.getOrdersByUserId(user.getUserId());
+            String sort = req.getParameter("sort");
+            int page = 1;
+            int pageSize = 8;
+            try {
+                String pageStr = req.getParameter("page");
+                if (pageStr != null && !pageStr.isEmpty()) page = Integer.parseInt(pageStr);
+            } catch (NumberFormatException e) {}
+            if (page < 1) page = 1;
+
+            long total = orderService.countOrdersByUserId(user.getUserId());
+            int totalPages = (int) Math.ceil((double) total / pageSize);
+            if (totalPages < 1) totalPages = 1;
+            if (page > totalPages) page = totalPages;
+
+            List<Order> orders = orderService.getOrdersByUserId(user.getUserId(), sort, page, pageSize);
             req.setAttribute("orders", orders);
+            req.setAttribute("sort", sort);
+            req.setAttribute("currentPage", page);
+            req.setAttribute("totalPages", totalPages);
         } catch (Exception e) {
             e.printStackTrace();
         }

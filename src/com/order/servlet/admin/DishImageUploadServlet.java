@@ -41,14 +41,15 @@ public class DishImageUploadServlet extends HttpServlet {
             }
 
             String fileName = "dish_" + UUID.randomUUID().toString().replace("-", "") + ext;
-            String uploadDir = getServletContext().getRealPath("/images/dishes");
+
+            // 保存到独立图片目录（永久保存，重部署不丢失）
+            String uploadDir = "D:\\upload\\images";
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
-
             File file = new File(dir, fileName);
             filePart.write(file.getAbsolutePath());
 
-            String imageUrl = "images/dishes/" + fileName;
+            String imageUrl = "/upload/" + fileName;
             resp.getWriter().print("{\"success\":true,\"url\":\"" + imageUrl + "\"}");
         } catch (Exception e) {
             e.printStackTrace();

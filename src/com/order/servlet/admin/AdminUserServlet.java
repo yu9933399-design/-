@@ -24,8 +24,35 @@ public class AdminUserServlet extends HttpServlet {
         if (path == null) path = "/";
 
         String keyword = req.getParameter("keyword");
+        String roleStr = req.getParameter("role");
+        String sort = req.getParameter("sort");
+        Integer roleFilter = null;
+        if ("2".equals(roleStr)) roleFilter = 2;
+        else if ("0".equals(roleStr)) roleFilter = 0;
+
+        int page = 1;
+        int pageSize = 10;
         try {
-            List<User> users = (keyword != null && !keyword.isEmpty()) ? userService.search(keyword) : userService.findAll();
+            String pageStr = req.getParameter("page");
+            if (pageStr != null && !pageStr.isEmpty()) page = Integer.parseInt(pageStr);
+        } catch (NumberFormatException e) {}
+        if (page < 1) page = 1;
+
+        try {
+            long total = (keyword != null && !keyword.isEmpty())
+                ? userService.countByRoleWithKeyword(roleFilter, keyword)
+                : userService.countByRole(roleFilter);
+            int totalPages = (int) Math.ceil((double) total / pageSize);
+            if (totalPages < 1) totalPages = 1;
+            if (page > totalPages) page = totalPages;
+
+            List<User> users = (keyword != null && !keyword.isEmpty())
+                ? userService.findByRoleWithKeywordPaged(roleFilter, keyword, page, pageSize, sort)
+                : userService.findByRolePaged(roleFilter, page, pageSize, sort);
+
+            long merchantCount = userService.countByRole(2);
+            long userCount = userService.countByRole(0);
+
             List<User> pendingMerchants = new java.util.ArrayList<>();
             for (User u : users) {
                 if (u.getStatus() != null && u.getStatus() == 2) {
@@ -35,6 +62,12 @@ public class AdminUserServlet extends HttpServlet {
             req.setAttribute("users", users);
             req.setAttribute("pendingMerchants", pendingMerchants);
             req.setAttribute("keyword", keyword);
+            req.setAttribute("roleFilter", roleFilter);
+            req.setAttribute("sort", sort);
+            req.setAttribute("currentPage", page);
+            req.setAttribute("totalPages", totalPages);
+            req.setAttribute("merchantCount", merchantCount);
+            req.setAttribute("userCount", userCount);
         } catch (Exception e) { e.printStackTrace(); }
         req.getRequestDispatcher("/jsp/admin/user/list.jsp").forward(req, resp);
     }

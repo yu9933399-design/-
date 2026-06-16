@@ -28,8 +28,23 @@ public class AdminMerchantServlet extends HttpServlet {
         String path = req.getPathInfo();
         if (path == null || path.equals("/")) {
             try {
-                List<User> merchants = userService.findAllByRoleAndStatus(2, 0);
+                int page = 1;
+                int pageSize = 12;
+                try {
+                    String pageStr = req.getParameter("page");
+                    if (pageStr != null && !pageStr.isEmpty()) page = Integer.parseInt(pageStr);
+                } catch (NumberFormatException e) {}
+                if (page < 1) page = 1;
+
+                long total = userService.countMerchantsByCategory(null);
+                int totalPages = (int) Math.ceil((double) total / pageSize);
+                if (totalPages < 1) totalPages = 1;
+                if (page > totalPages) page = totalPages;
+
+                List<User> merchants = userService.findMerchantsByCategoryPaged(null, page, pageSize);
                 req.setAttribute("merchants", merchants);
+                req.setAttribute("currentPage", page);
+                req.setAttribute("totalPages", totalPages);
             } catch (Exception e) { e.printStackTrace(); }
             req.getRequestDispatcher("/jsp/admin/merchant/list.jsp").forward(req, resp);
         } else if ("/detail".equals(path)) {

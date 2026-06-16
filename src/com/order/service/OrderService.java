@@ -162,15 +162,51 @@ public class OrderService {
     }
 
     public List<Order> getOrdersByUserId(Integer userId) throws Exception {
-        return orderDAO.findByUserId(userId);
+        return orderDAO.findByUserId(userId, null);
+    }
+
+    public List<Order> getOrdersByUserId(Integer userId, String sort) throws Exception {
+        return orderDAO.findByUserId(userId, sort);
+    }
+
+    public List<Order> getOrdersByUserId(Integer userId, String sort, int page, int pageSize) throws Exception {
+        return orderDAO.findByUserId(userId, sort, page, pageSize);
+    }
+
+    public long countOrdersByUserId(Integer userId) throws Exception {
+        return orderDAO.countByUserId(userId);
+    }
+
+    public List<Order> getOrdersByMerchantId(Integer merchantId, String keyword, String sort) throws Exception {
+        return orderDAO.findOrdersByMerchantId(merchantId, keyword, sort);
+    }
+
+    public List<Order> getOrdersByMerchantId(Integer merchantId, String keyword, String sort, int page, int pageSize) throws Exception {
+        return orderDAO.findOrdersByMerchantId(merchantId, keyword, sort, page, pageSize);
+    }
+
+    public long countOrdersByMerchantId(Integer merchantId, String keyword) throws Exception {
+        return orderDAO.countByMerchantId(merchantId, keyword);
+    }
+
+    public List<Order> getAllOrders(String keyword, String sort) throws Exception {
+        return orderDAO.findAll(keyword, sort);
+    }
+
+    public List<Order> getAllOrders(String keyword, String sort, int page, int pageSize) throws Exception {
+        return orderDAO.findAll(keyword, sort, page, pageSize);
+    }
+
+    public long countAllOrders(String keyword) throws Exception {
+        return orderDAO.countAll(keyword);
     }
 
     public List<Order> getOrdersByMerchantId(Integer merchantId) throws Exception {
-        return orderDAO.findOrdersByMerchantId(merchantId);
+        return orderDAO.findOrdersByMerchantId(merchantId, null, null);
     }
 
     public List<Order> getAllOrders() throws Exception {
-        return orderDAO.findAll();
+        return orderDAO.findAll(null, null);
     }
 
     public Order getOrderById(Integer orderId) throws Exception {

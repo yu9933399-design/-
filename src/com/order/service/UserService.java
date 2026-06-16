@@ -107,8 +107,36 @@ public class UserService {
         return userDAO.findAll();
     }
 
+    public List<User> findAllPaged(int page, int pageSize) throws Exception {
+        return userDAO.findAllPaged(page, pageSize);
+    }
+
+    public long countAll() throws Exception {
+        return userDAO.count();
+    }
+
+    public long countWithKeyword(String keyword) throws Exception {
+        return userDAO.countWithKeyword(keyword);
+    }
+
     public List<User> search(String keyword) throws Exception {
         return userDAO.search(keyword);
+    }
+
+    public List<User> findByRolePaged(Integer role, int page, int pageSize, String sort) throws Exception {
+        return userDAO.findByRolePaged(role, page, pageSize, sort);
+    }
+
+    public List<User> findByRoleWithKeywordPaged(Integer role, String keyword, int page, int pageSize, String sort) throws Exception {
+        return userDAO.findByRoleWithKeywordPaged(role, keyword, page, pageSize, sort);
+    }
+
+    public long countByRole(Integer role) throws Exception {
+        return userDAO.countByRole(role);
+    }
+
+    public long countByRoleWithKeyword(Integer role, String keyword) throws Exception {
+        return userDAO.countByRoleWithKeyword(role, keyword);
     }
 
     public void updateStatus(Integer userId, Integer status) throws Exception {
@@ -133,6 +161,14 @@ public class UserService {
 
     public List<User> findMerchantsByCategory(String category) throws Exception {
         return userDAO.findMerchantsByCategory(category);
+    }
+
+    public List<User> findMerchantsByCategoryPaged(String category, int page, int pageSize) throws Exception {
+        return userDAO.findMerchantsByCategoryPaged(category, page, pageSize);
+    }
+
+    public long countMerchantsByCategory(String category) throws Exception {
+        return userDAO.countMerchantsByCategory(category);
     }
 
     public void updateShopCategory(Integer userId, String shopCategory) throws Exception {

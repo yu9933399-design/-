@@ -4,9 +4,16 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"><link href="${pageContext.request.contextPath}/css/custom.css" rel="stylesheet"></head>
 <body class="bg-light"><div class="d-flex"><jsp:include page="/jsp/common/admin-sidebar.jsp"/>
 <div class="flex-grow-1 p-4"><h4 class="fw-bold mb-4"><i class="fas fa-receipt me-2 text-warning"></i><c:choose><c:when test="${sessionScope.user.role == 1}">商家订单（平台监管）</c:when><c:otherwise>我的订单</c:otherwise></c:choose></h4>
+<!-- 搜索+排序+筛选栏 -->
+<form class="row g-2 mb-3 align-items-end" method="get" action="${pageContext.request.contextPath}/admin/order">
 <c:if test="${sessionScope.user.role == 1 && not empty merchants}">
-<form class="row g-2 mb-3" method="get" action="${pageContext.request.contextPath}/admin/order"><div class="col-auto"><select class="form-select" name="merchantId" onchange="this.form.submit()"><option value="">所有商家</option><c:forEach items="${merchants}" var="m"><option value="${m.userId}" ${param.merchantId == m.userId.toString() ? 'selected' : ''}><c:out value="${m.realName}"/></option></c:forEach></select></div></form>
+<div class="col-auto"><select class="form-select" name="merchantId" onchange="this.form.submit()"><option value="">所有商家</option><c:forEach items="${merchants}" var="m"><option value="${m.userId}" ${param.merchantId == m.userId.toString() ? 'selected' : ''}><c:out value="${m.realName}"/></option></c:forEach></select></div>
 </c:if>
+<div class="col-auto"><input type="text" class="form-control" name="keyword" value="${keyword}" placeholder="搜索用户名..."></div>
+<div class="col-auto"><select class="form-select" name="sort"><option value="default" ${empty sort || sort == 'default' ? 'selected' : ''}>默认排序</option><option value="time" ${sort == 'time' ? 'selected' : ''}>按时间排序</option></select></div>
+<div class="col-auto"><button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>搜索</button>
+<a href="${pageContext.request.contextPath}/admin/order" class="btn btn-outline-secondary ms-1">重置</a></div>
+</form>
 <div class="card border-0 shadow-sm"><div class="card-body"><table class="table table-hover align-middle">
 <thead class="table-light"><tr><th>订单号</th><th>用户</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
 <tbody><c:forEach items="${orders}" var="order"><tr>
@@ -43,6 +50,15 @@
   </c:if>
 </c:if>
 </td></tr></c:forEach></tbody></table></div></div>
+<%-- 分页导航：总页数>1时显示，链接携带page/keyword/sort/merchantId参数，刷新后保留当前页码和筛选条件 --%>
+<c:if test="${totalPages > 1}">
+<nav class="mt-3"><ul class="pagination justify-content-center">
+<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}"><a class="page-link" href="${pageContext.request.contextPath}/admin/order?page=${currentPage - 1}<c:if test='${not empty keyword}'>&keyword=${keyword}</c:if><c:if test='${sort != null && sort != "default"}'>&sort=${sort}</c:if><c:if test='${merchantId != null}'>&merchantId=${merchantId}</c:if>">上一页</a></li>
+<c:forEach begin="1" end="${totalPages}" var="i">
+<li class="page-item ${currentPage == i ? 'active' : ''}"><a class="page-link" href="${pageContext.request.contextPath}/admin/order?page=${i}<c:if test='${not empty keyword}'>&keyword=${keyword}</c:if><c:if test='${sort != null && sort != "default"}'>&sort=${sort}</c:if><c:if test='${merchantId != null}'>&merchantId=${merchantId}</c:if>">${i}</a></li>
+</c:forEach>
+<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}"><a class="page-link" href="${pageContext.request.contextPath}/admin/order?page=${currentPage + 1}<c:if test='${not empty keyword}'>&keyword=${keyword}</c:if><c:if test='${sort != null && sort != "default"}'>&sort=${sort}</c:if><c:if test='${merchantId != null}'>&merchantId=${merchantId}</c:if>">下一页</a></li>
+</ul></nav></c:if>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>

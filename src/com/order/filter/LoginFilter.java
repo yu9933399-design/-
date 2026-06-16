@@ -34,6 +34,7 @@ public class LoginFilter implements Filter {
             path.startsWith("/css/") ||
             path.startsWith("/js/") ||
             path.startsWith("/images/") ||
+            path.startsWith("/upload/") ||
             path.endsWith(".ico")) {
             chain.doFilter(req, resp);
             return;

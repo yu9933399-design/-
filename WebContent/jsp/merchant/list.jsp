@@ -54,6 +54,15 @@
 </div>
 </c:otherwise>
 </c:choose>
+<%-- 分页导航：总页数>1时显示，链接携带page/category参数，刷新后保留当前页码和分类筛选 --%>
+<c:if test="${totalPages > 1}">
+<nav class="mt-3"><ul class="pagination justify-content-center">
+<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}"><a class="page-link" href="${pageContext.request.contextPath}/merchant/list?page=${currentPage - 1}<c:if test='${not empty selectedCategory}'>&category=${selectedCategory}</c:if>">上一页</a></li>
+<c:forEach begin="1" end="${totalPages}" var="i">
+<li class="page-item ${currentPage == i ? 'active' : ''}"><a class="page-link" href="${pageContext.request.contextPath}/merchant/list?page=${i}<c:if test='${not empty selectedCategory}'>&category=${selectedCategory}</c:if>">${i}</a></li>
+</c:forEach>
+<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}"><a class="page-link" href="${pageContext.request.contextPath}/merchant/list?page=${currentPage + 1}<c:if test='${not empty selectedCategory}'>&category=${selectedCategory}</c:if>">下一页</a></li>
+</ul></nav></c:if>
 </div>
 
 <style>.card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,.1)!important}</style>

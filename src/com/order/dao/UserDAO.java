@@ -55,6 +55,49 @@ public class UserDAO extends BaseDAO {
         return queryScalar("SELECT COUNT(*) FROM user");
     }
 
+    public long countByRole(Integer role) throws SQLException {
+        if (role == null) return count();
+        return queryScalar("SELECT COUNT(*) FROM user WHERE role = ?", role);
+    }
+
+    public long countWithKeyword(String keyword) throws SQLException {
+        if (keyword == null || keyword.trim().isEmpty()) return count();
+        return queryScalar("SELECT COUNT(*) FROM user WHERE username LIKE ? OR real_name LIKE ? OR phone LIKE ?",
+                "%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%");
+    }
+
+    public long countByRoleWithKeyword(Integer role, String keyword) throws SQLException {
+        if (role == null) return countWithKeyword(keyword);
+        if (keyword == null || keyword.trim().isEmpty()) return countByRole(role);
+        return queryScalar("SELECT COUNT(*) FROM user WHERE role = ? AND (username LIKE ? OR real_name LIKE ? OR phone LIKE ?)",
+                role, "%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%");
+    }
+
+    public List<User> findAllPaged(int page, int pageSize) throws SQLException {
+        int offset = (page - 1) * pageSize;
+        return queryList(User.class, "SELECT * FROM user ORDER BY user_id DESC LIMIT ?, ?", offset, pageSize);
+    }
+
+    public List<User> findByRolePaged(Integer role, int page, int pageSize, String sort) throws SQLException {
+        int offset = (page - 1) * pageSize;
+        String orderClause = "time".equals(sort) ? " ORDER BY user_id DESC" : " ORDER BY role ASC, user_id DESC";
+        if (role == null) {
+            return queryList(User.class, "SELECT * FROM user" + orderClause + " LIMIT ?, ?", offset, pageSize);
+        }
+        return queryList(User.class, "SELECT * FROM user WHERE role = ?" + orderClause + " LIMIT ?, ?", role, offset, pageSize);
+    }
+
+    public List<User> findByRoleWithKeywordPaged(Integer role, String keyword, int page, int pageSize, String sort) throws SQLException {
+        int offset = (page - 1) * pageSize;
+        String orderClause = "time".equals(sort) ? " ORDER BY user_id DESC" : " ORDER BY role ASC, user_id DESC";
+        if (role == null) {
+            return queryList(User.class, "SELECT * FROM user WHERE username LIKE ? OR real_name LIKE ? OR phone LIKE ?" + orderClause + " LIMIT ?, ?",
+                    "%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%", offset, pageSize);
+        }
+        return queryList(User.class, "SELECT * FROM user WHERE role = ? AND (username LIKE ? OR real_name LIKE ? OR phone LIKE ?)" + orderClause + " LIMIT ?, ?",
+                role, "%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%", offset, pageSize);
+    }
+
     public List<User> findAllByRoleAndStatus(Integer role, Integer status) throws SQLException {
         return queryList(User.class, "SELECT * FROM user WHERE role = ? AND status = ? ORDER BY user_id DESC", role, status);
     }
@@ -64,6 +107,21 @@ public class UserDAO extends BaseDAO {
             return findAllByRoleAndStatus(2, 0);
         }
         return queryList(User.class, "SELECT * FROM user WHERE role = 2 AND status = 0 AND shop_category = ? ORDER BY user_id DESC", category.trim());
+    }
+
+    public List<User> findMerchantsByCategoryPaged(String category, int page, int pageSize) throws SQLException {
+        int offset = (page - 1) * pageSize;
+        if (category == null || category.trim().isEmpty()) {
+            return queryList(User.class, "SELECT * FROM user WHERE role = 2 AND status = 0 ORDER BY user_id DESC LIMIT ?, ?", offset, pageSize);
+        }
+        return queryList(User.class, "SELECT * FROM user WHERE role = 2 AND status = 0 AND shop_category = ? ORDER BY user_id DESC LIMIT ?, ?", category.trim(), offset, pageSize);
+    }
+
+    public long countMerchantsByCategory(String category) throws SQLException {
+        if (category == null || category.trim().isEmpty()) {
+            return queryScalar("SELECT COUNT(*) FROM user WHERE role = 2 AND status = 0");
+        }
+        return queryScalar("SELECT COUNT(*) FROM user WHERE role = 2 AND status = 0 AND shop_category = ?", category.trim());
     }
 
     public int updateShopCategory(Integer userId, String shopCategory) throws SQLException {
